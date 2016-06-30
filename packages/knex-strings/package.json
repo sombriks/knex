@@ -1,0 +1,28 @@
+{
+  "name": "@knex/strings",
+  "version": "1.0.0-alpha.1",
+  "description": "Utilities for building SQL strings",
+  "main": "index.js",
+  "browser": "lib/sql-strings.js",
+  "scripts": {
+    "test": "mocha ./src/__tests__"
+  },
+  "author": {
+    "name": "Tim Griesser",
+    "web": "https://github.com/tgriesser"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "debug": "^2.2.0",
+    "es6-symbol": "^3.0.2",
+    "invariant": "^2.2.1",
+    "shallow-equals": "^0.2.2"
+  },
+  "devDependencies": {
+    "dedent": "^0.6.0",
+    "eslint": "^2.13.1",
+    "eslint-plugin-node": "^1.5.1",
+    "expect": "^1.20.1",
+    "mocha": "^2.5.1"
+  }
+}

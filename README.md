@@ -1,77 +1,74 @@
-# [knex.js](http://knexjs.org) [![Build Status](https://travis-ci.org/tgriesser/knex.svg?branch=master)](https://travis-ci.org/tgriesser/knex) [![Coverage Status](https://coveralls.io/repos/tgriesser/knex/badge.svg?branch=master)](https://coveralls.io/r/tgriesser/knex?branch=master)
+# Knex: 1.0 WIP
 
-Gitter chat
-[![Gitter chat](https://badges.gitter.im/tgriesser/knex.svg)](https://gitter.im/tgriesser/knex "Gitter chat")
+This Branch is a WIP reorganization of the project, making more consistent documented internal APIs, and spliting up the project using [lerna](https://lernajs.io/). Please refer to the main master branch as nothing here is set in stone and a lot of things will probably be some breaking of thins over the coming month or two. Don't worry though - the goal is to have this branch run against the current test suite before it's used as the new master and put out as an RC for 1.0.
 
-A SQL query builder that is flexible, portable, and fun to use!
+## (Proposed) Project Modules
 
-A batteries-included, multi-dialect (MSSQL, MySQL, PostgreSQL, SQLite3, WebSQL, Oracle) query builder for
-Node.js and the Browser, featuring:
+### @knex/strings
 
-- [transactions](http://knexjs.org/#Transactions)
-- [connection pooling](http://knexjs.org/#Installation-pooling)
-- [streaming queries](http://knexjs.org/#Interfaces-Streams)
-- both a [promise](http://knexjs.org/#Interfaces-Promises) and [callback](http://knexjs.org/#Interfaces-Callbacks) API
-- a [thorough test suite](https://travis-ci.org/tgriesser/knex)
-- the ability to [run in the Browser](http://knexjs.org/#Installation-browser)
+This module will be the backbone for the library, and provide a standard means for composing SQL strings from smaller fragments. It utilizes ES6 [tagged template strings](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals) to build more powerful statements than are currently supported with `knex.raw`
 
-[Read the full documentation to get started!](http://knexjs.org)
+### @knex/builder
 
-For support and questions, join the #bookshelf channel on freenode IRC
+The Builder class is the well known chaning syntax for dynamically building query strings. It will be extended by the individual language dialect modules, and also modified by the adapter class to add async functionality.
 
-For an Object Relational Mapper, see: http://bookshelfjs.org
+### @knex/builder-mssql
+### @knex/builder-mysql
+### @knex/builder-orcale
+### @knex/builder-postgresql
+### @knex/builder-sqlite
 
-To see the SQL that Knex will generate for a given query, see: [Knex Query Lab](http://michaelavila.com/knex-querylab/)
+### @knex/adapter
 
-## Examples
+The adapter will be a generic interface used to add all of the functionality that makes knex useful beyond query building (transactions, pool, etc.). This module will be consumed by the following library specific adapter libraries:
 
-We have several examples [on the website](http://knexjs.org). Here is the first one to get you started:
+### @knex/adapter-mssql
+### @knex/adapter-mysql
+### @knex/adapter-mysql2
+### @knex/adapter-mariasql
+### @knex/adapter-pg
+### @knex/adapter-oracle
+### @knex/adapter-oracledb
+### @knex/adapter-sqlite3
+### @knex/adapter-strong-oracle
+### @knex/adapter-websql
 
-```js
-var knex = require('knex')({
-  dialect: 'sqlite3',
-  connection: {
-    filename: './data.db'
-  }
-});
+### @knex/ddl
 
-// Create a table
-knex.schema.createTable('users', function(table) {
-  table.increments('id');
-  table.string('user_name');
-})
+The ddl module will function similar to the builder, but provide common utilities for dealing with DDL statements used in migrations.
 
-// ...and another
-.createTable('accounts', function(table) {
-  table.increments('id');
-  table.string('account_name');
-  table.integer('user_id').unsigned().references('users.id');
-})
+### @knex/ddl-mssql
+### @knex/ddl-mysql
+### @knex/ddl-orcale
+### @knex/ddl-postgresql
+### @knex/ddl-sqlite
 
-// Then query the table...
-.then(function() {
-  return knex.insert({user_name: 'Tim'}).into('users');
-})
+Additional util modules:
 
-// ...and using the insert id, insert into the other table.
-.then(function(rows) {
-  return knex.table('accounts').insert({account_name: 'knex', user_id: rows[0]});
-})
+### @knex/exceptions
+### @knex/seed
+### @knex/migrate
+### @knex/cli
+### @knex/coroutine (see generator notes below:)
 
-// Query both of the rows.
-.then(function() {
-  return knex('users')
-    .join('accounts', 'users.id', 'accounts.user_id')
-    .select('users.user_name as user', 'accounts.account_name as account');
-})
+## Other Notes:
 
-// .map over the results
-.map(function(row) {
-  console.log(row);
-})
+Generators (not async/await until this is a standard) will be used internally in many cases where multiple queries need to be run over time. Generators are simple to test and are fully supported in Node 6.
 
-// Finally, add a .catch handler for the promise chain
-.catch(function(e) {
-  console.error(e);
-});
-```
+knex.createContext() (naming subject to change) will be created to get a knex instance which will automatically use the same connection, useful for a request/response cycle.
+
+knex.transaction() may be called without a function, to make transactions more portable and cheaper to use. It will build off of the context feature mentioned above.
+
+Events will continue to be supported, but will be deprecated for 2.0 in favor of more explicit hooks, instrumentation, and observables.
+
+Exceptions: Should be standardized throughout the library, looking at using https://www.python.org/dev/peps/pep-0249/#exceptions as a guide
+
+... More notes to come
+
+## Additional Main TODOs before 1.0
+
+- [ ] Make it simpler to provide ssl credentials via query string / make SSL connections more straight-forward in general
+- [ ] True prepared statements
+- [ ] Better testing / way to test in client applications
+- [ ] More consistent ways to handle connection failure
+- [ ] Generate documentation from markdown
